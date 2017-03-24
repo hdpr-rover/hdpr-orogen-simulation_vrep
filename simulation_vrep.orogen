@@ -1,0 +1,14 @@
+name "simulation_vrep"
+import_types_from "simulation_vrepTypes.hpp"
+using_library "vrep"
+
+import_types_from "std"
+# import_types_from "base"
+
+task_context "Task" do
+    needs_configuration
+    property "config_value", "/std/string"
+    input_port "input", "/std/string"
+    output_port "output", "int"
+    periodic 0.1
+end
