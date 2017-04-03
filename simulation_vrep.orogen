@@ -1,14 +1,46 @@
 name "simulation_vrep"
-import_types_from "simulation_vrepTypes.hpp"
+
 using_library "vrep"
+using_library "gnss_trimble"
 
 import_types_from "std"
-# import_types_from "base"
+import_types_from "base"
+import_types_from "simulation_vrepTypes.hpp"
+import_types_from "gnss_trimble/GNSSTypes.hpp"
 
 task_context "Task" do
     needs_configuration
-    property "config_value", "/std/string"
-    input_port "input", "/std/string"
-    output_port "output", "int"
+
+    property("yaw_drift", "/double", 0).doc("Simulated yaw drift value, applied periodically.")
+
+    input_port("trajectory", "/std/vector</base/Waypoint>").doc("Trajectory the robot should follow.")
+    input_port("currentWaypoint", "/base/Waypoint").doc("Waypoint that is currently being chased.")
+    input_port("gps_heading_input", "/base/samples/RigidBodyState").doc("Input calculated pose of the GPS antenna.")
+    input_port("joints_commands", "/base/commands/Joints")
+
+    output_port("joints_readings", "/base/samples/Joints")
+    output_port("gps_pose_samples", "/base/samples/RigidBodyState").doc("Simulated GPS output in UTM coordinates relative to local origin.")
+    output_port("imu_pose_samples", "/base/samples/RigidBodyState").doc("Simulated IMU output.")
+    output_port("gps_raw_data", "/gnss_trimble/Solution").doc("Raw value of GNSS/NMEA data.")
+
     periodic 0.1
+end
+
+using_task_library 'motion_translator'
+using_task_library 'command_arbiter'
+using_task_library 'waypoint_navigation'
+using_task_library 'locomotion_control'
+using_task_library 'controldev'
+using_task_library 'gps_heading'
+
+deployment 'hdpr_simulation' do
+    task("command_arbiter", "command_arbiter::Task")
+    task("trajectoryGen", "waypoint_navigation::TrajectoryTest")
+    task("waypoint_navigation", "waypoint_navigation::Task")
+    task("simulation", "simulation_vrep::Task")
+    task("joystick", "controldev::JoystickTask")
+    task("motion_translator", "motion_translator::Task")
+    task("locomotion_control", "locomotion_control::Task")
+    task("gps_heading", "gps_heading::Task")
+    add_default_logger
 end
