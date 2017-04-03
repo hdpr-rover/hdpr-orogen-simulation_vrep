@@ -2,14 +2,14 @@
 
 using namespace simulation_vrep;
 
-Task::Task(std::string const& name)
-    : TaskBase(name)
+Task::Task(std::string const& name):
+    TaskBase(name)
 {
 
 }
 
-Task::Task(std::string const& name, RTT::ExecutionEngine* engine)
-    : TaskBase(name, engine)
+Task::Task(std::string const& name, RTT::ExecutionEngine* engine):
+    TaskBase(name, engine)
 {
 
 }
@@ -55,6 +55,12 @@ bool Task::configureHook()
     }
 
     yaw_drift = 0;
+
+    ptr_left_frame.reset(&left_frame);
+    ptr_right_frame.reset(&right_frame);
+
+    vrep->getObjectHandle("joint_camera_pan", &ptu_pan_motor_handler);
+    vrep->getObjectHandle("joint_camera_tilt", &ptu_tilt_motor_handler);
 
     std::string const message("Controller configured");
     vrep->sendStatusMessage(message.c_str());
@@ -211,6 +217,33 @@ void Task::updateHook()
         float orientation[3] = {-euler(0), -euler(1), -euler(2)};
         vrep->setOrientation(gps_heading_handler, orientation);
     }
+
+    // PTU functionality
+    if(_pan_set.read(pan_set) == RTT::NewData)
+    {
+        vrep->setJointPosition(ptu_pan_motor_handler, pan_set);
+    }
+
+    if(_tilt_set.read(tilt_set) == RTT::NewData)
+    {
+        // Inverse and divide by 4 as the real tilt has a reduction of 4:1
+        vrep->setJointPosition(ptu_tilt_motor_handler, tilt_set / 4 * -1);
+    }
+
+    // PTU feedback, tilt must be multiplied by 4 and inversed
+    pan_angle = (float)vrep->getJointPosition(ptu_pan_motor_handler);
+    tilt_angle = (float)vrep->getJointPosition(ptu_tilt_motor_handler) * 4 * -1;
+    _pan_angle.write(pan_angle);
+    _tilt_angle.write(tilt_angle);
+
+    // Update frame times
+    base::Time camera_time = base::Time::now();
+    left_frame.time = camera_time;
+    right_frame.time = camera_time;
+
+    // Output dummy frames for the PTU
+    _ptu_left_frame.write(ptr_left_frame);
+    _ptu_right_frame.write(ptr_right_frame);
 }
 
 void Task::errorHook()

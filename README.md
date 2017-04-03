@@ -65,6 +65,6 @@ Simulated yaw drift value, applied periodically.
 
 A deployment launching all the required components for a simulation.
 
-Note the the simulation in V-REP must be running before this deployment can be run. The scene can be found in the `vrep` folder and the launch file under `test`. Call the deployment with
+Note the the simulation in V-REP must be running before this deployment can be run. The scene can be found in the `vrep` folder and the launch file under `scripts`. Call the deployment with
 
-    ruby deployment.rb
+    ruby test.rb

@@ -23,6 +23,14 @@ task_context "Task" do
     output_port("imu_pose_samples", "/base/samples/RigidBodyState").doc("Simulated IMU output.")
     output_port("gps_raw_data", "/gnss_trimble/Solution").doc("Raw value of GNSS/NMEA data.")
 
+    # PTU stuff
+    input_port("pan_set", "double").doc("Input of the left camera of the PTU")
+    input_port("tilt_set", "double").doc("Input of the right camera of the PTU")
+    output_port("pan_angle", "double").doc("PTU pan position")
+    output_port("tilt_angle", "double").doc("PTU tilt position")
+    output_port("ptu_left_frame", ro_ptr('base::samples::frame::Frame')).doc("Left camera of the PTU")
+    output_port("ptu_right_frame", ro_ptr('base::samples::frame::Frame')).doc("Right camera of the PTU")
+
     periodic 0.1
 end
 
@@ -32,6 +40,8 @@ using_task_library 'waypoint_navigation'
 using_task_library 'locomotion_control'
 using_task_library 'controldev'
 using_task_library 'gps_heading'
+using_task_library 'pancam_panorama'
+using_task_library 'pancam_360'
 
 deployment 'hdpr_simulation' do
     task("command_arbiter", "command_arbiter::Task")
@@ -42,5 +52,7 @@ deployment 'hdpr_simulation' do
     task("motion_translator", "motion_translator::Task")
     task("locomotion_control", "locomotion_control::Task")
     task("gps_heading", "gps_heading::Task")
+    task("pancam_panorama", "pancam_panorama::Task")
+    task("pancam_360", "pancam_360::Task")
     add_default_logger
 end
