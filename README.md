@@ -45,6 +45,8 @@ Execute the following to build the package:
 * **`currentWaypoint`** (/base/Waypoint)
 * **`gps_heading_input`** (/base/samples/RigidBodyState)
 * **`joints_commands`** (/base/commands/Joints)
+* **`pan_set`** (/double)
+* **`tilt_set`** (/double)
 
 #### Outputs
 
@@ -52,12 +54,20 @@ Execute the following to build the package:
 * **`gps_pose_samples`** (/base/samples/RigidBodyState)
 * **`imu_pose_samples`** (/base/samples/RigidBodyState)
 * **`gps_raw_data`** (/gnss_trimble/Solution)
+* **`pan_angle`** (/double)
+* **`tilt_angle`** (/double)
+* **`ptu_left_frame`** (ro_ptr('base::samples::frame::Frame'))
+* **`ptu_right_frame`** (ro_ptr('base::samples::frame::Frame'))
 
 #### Parameters
 
 * **`yaw_drift`** (/double)
 
 Simulated yaw drift value, applied periodically.
+
+* **`gps_noise`** (/double)
+
+Noise to add (in meters) to the GPS position when RTK is lost.
 
 #### Deployements
 
