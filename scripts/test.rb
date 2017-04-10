@@ -38,7 +38,7 @@ Orocos::Process.run 'hdpr_simulation' do
 
     # Add the trajectory generation component
     trajectoryGen = Orocos.name_service.get 'trajectoryGen'
-    Orocos.conf.apply(trajectoryGen, ['hdprtest','decos'], :override => true)
+    Orocos.conf.apply(trajectoryGen, ['decos'], :override => true)
     trajectoryGen.configure
 
     motion_translator = Orocos.name_service.get 'motion_translator'
@@ -57,6 +57,11 @@ Orocos::Process.run 'hdpr_simulation' do
     pancam_360 = Orocos.name_service.get 'pancam_360'
     Orocos.conf.apply(pancam_360, ['default'], :override => true)
     pancam_360.configure
+
+    #logger = Orocos.name_service.get 'hdpr_simulation_Logger'
+    #logger.file = "simulation.log"
+    #logger.log(command_arbiter.)
+    #logger.start
 
     joystick.raw_command.connect_to                     motion_translator.raw_command
     joystick.raw_command.connect_to                     command_arbiter.raw_command

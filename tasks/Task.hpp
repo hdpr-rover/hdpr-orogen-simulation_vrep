@@ -43,6 +43,7 @@ namespace simulation_vrep
         base::samples::RigidBodyState gps_heading_input;
 
         float yaw_drift;
+        bool gps_rtk_fix;
 
         // PTU stuff
         double pan_set, tilt_set, pan_angle, tilt_angle;

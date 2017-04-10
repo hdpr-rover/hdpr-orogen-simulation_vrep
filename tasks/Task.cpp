@@ -127,6 +127,20 @@ void Task::updateHook()
     joints_readings.time = base::Time::now();
     _joints_readings.write(joints_readings);
 
+    // GPS raw data to simulate the loss of GPS fix
+    gnss_trimble::Solution gps_raw_data;
+    if(vrep->getToggleButtonState("GPS_UI", 2))
+    {
+        gps_raw_data.positionType = gnss_trimble::RTK_FIXED;
+        gps_rtk_fix = true;
+    }
+    else
+    {
+        gps_raw_data.positionType = gnss_trimble::RTK_FLOAT;
+        gps_rtk_fix = false;
+    }
+    _gps_raw_data.write(gps_raw_data);
+
     // GPS output
     // This is a terrible way to populate the RigidBodyState message
     gps_pose_samples.time = base::Time::now();
@@ -135,6 +149,14 @@ void Task::updateHook()
     gps_pose_samples.position.x() = position[0];
     gps_pose_samples.position.y() = position[1];
     gps_pose_samples.position.z() = position[2];
+
+    // If RTK is lost then add noise on the GPS x-y position
+    if(!gps_rtk_fix)
+    {
+        gps_pose_samples.position.x() += _gps_noise.value() * 2.0 * ((float)rand() / (RAND_MAX + 1.0) - 0.5);
+        gps_pose_samples.position.y() += _gps_noise.value() * 2.0 * ((float)rand() / (RAND_MAX + 1.0) - 0.5);
+    }
+
     _gps_pose_samples.write(gps_pose_samples);
 
     // IMU output, actually the only interesting component is the gyro Z-axis
@@ -152,18 +174,6 @@ void Task::updateHook()
     Eigen::Quaterniond quaternion(cos(0.5 * yaw), 0.0, 0.0, sin(0.5 * yaw));
     imu_pose_samples.orientation = quaternion;
     _imu_pose_samples.write(imu_pose_samples);
-
-    // GPS raw data to simulate the loss of GPS fix
-    gnss_trimble::Solution gps_raw_data;
-    if(vrep->getToggleButtonState("GPS_UI", 2))
-    {
-        gps_raw_data.positionType = gnss_trimble::RTK_FIXED;
-    }
-    else
-    {
-        gps_raw_data.positionType = gnss_trimble::RTK_FLOAT;
-    }
-    _gps_raw_data.write(gps_raw_data);
 
     // Publish the dummies representing the waypoints
     static bool trajectoryDummies = false;
